@@ -1,0 +1,62 @@
+# New GCloud CLI Profile
+This is a requirement, and, this entire repo assumes you have completed this guide.
+
+## Prerequisite
+1. You understand how access is granted to GCP via UW Groups membership within the [u_mciman_tenants_iam_condevs](https://groups.uw.edu/search/?name=u_mciman_tenants_iam&stem=&member=&owner=&type=effective&scope=one) group.
+1. You have a local shell setup for [`gcloud`](https://cloud.google.com/sdk/docs/quickstarts) and **authenticated it with your netid**.
+2. You have ran the `gcloud components install kubectl`
+3. You can run the following command, which tells us you have permissions to the right project with the dev k8 cluster.  
+
+    ```
+    gcloud projects list --filter="labels.environment:dev"
+    ```
+
+4. The output from the command above will now be used as `[PROJECT-ID]` in the rest of this guide.
+
+## Create a gcloud Profile
+The `gcloud` command can execute commands against any number of Google accounts, projects, regions and zones.  To make our life eaiser and more automated lets create a profile that is specific to executing commands against the development Google Cloud Project and Kubernetes cluster.
+
+1. Create the new config (this wont change existing ones). You must use `k8dev` as the name, this repo assumes everyone has that profile.
+
+    ```
+    gcloud config configurations create k8dev
+    ```
+
+2. Initialize this new config by typing `gcloud init`.  
+   - Select "Re-initialize"
+   - Select your `netid@uw.edu`
+   - Select the `[PROJECT-ID]` from the pre-reqs.  
+
+3. Get the GCP region and zone, we want to set that in our config becuase life is hell when you have to type those for every gcloud command.
+
+    ```
+    gcloud container clusters list --project=[PROJECT-ID]
+    ```
+
+4. Set the region and zone to match the output from the previous step
+    
+    ```
+    gcloud config set compute/zone [zone]
+    gcloud config set compute/region [region]
+    ```
+
+## Confirm Your Access
+1. Make sure your gcloud access is setup correctly, if you followed the pre-reqs you should get a single project from the last command, something like `uwit-mci-0003  iam-dev  303159285527`, though it may not be exactly that.
+
+    ```
+    gcloud auth list
+    gcloud projects list
+    gcloud projects list --filter="labels.environment:dev"
+    ```
+
+1. We need to set your `~/.kube/config` credentials so that `kubectl` [commands will work](https://cloud.google.com/sdk/gcloud/reference/container/clusters/get-credentials).  If you get prompted for region or zone errors then you did not finish the previous section correctly.
+
+    ```
+    gcloud container clusters get-credentials [PROJECT-ID]-cluster
+    ```
+
+2. Confirm that `kubectl` works
+
+    ```
+    kubectl get all
+    ```
