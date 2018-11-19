@@ -1,4 +1,4 @@
-## New CI/CD Integration
+# New CI/CD Integration
 ...guide coming soon, integrated your travis finished hook with our k8 deployment hook
 
 ## Prerequisite

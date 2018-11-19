@@ -60,3 +60,11 @@ The `gcloud` command can execute commands against any number of Google accounts,
     ```
     kubectl get all
     ```
+
+3. Rename the `kubectl` context so that you can manage multiple k8 clusters more eaisly.  Switching `gcloud config configurations` profiles does not automaticly switch `kubectl config current-context`, they are managed independantly.
+
+   ```
+   kubectl config get-contexts
+   kubectl config rename-context [name from prev cmd] [shorter name]
+   kubectl config use-context [shorter name]
+   ```

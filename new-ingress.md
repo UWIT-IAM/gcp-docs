@@ -1,54 +1,52 @@
-# TO DO - write this just for the ingress part
+# New GCloud TLS Ingress Load Balancer
+This details the steps required to create a new L7 Ingress load balancer in GCP.  The goal is to use the external IP of this newly created load balancer as the `A` record of your FQDN so traffic can dynamically be routed to your cotnainer within a k8 cluster.
 
+## Prerequisite
+1. You have configured a [iamshared gcloud CLI profile](projects-shared.md)
+1. You have a [hosted zone setup](new-hostedzone.md) for `[env].s.uw.edu`.  In this document `[env]` represents `iamdev` for example.
+1. You have a [deployment created](new-deployment) called `[appname]` with it's respective service called `[servicename]` (these are often the same name).
 
+    ```
+    kubectl get deployment [appname]
+    kubectl get services [servicename]
+    ```
+    
+1. The backing containers of the `[appname]` pods served by `[servicename]` responds with HTTP status code 200 at `/` as a default. Managing health check configuration outside of that route is possible.
 
-This details the steps required to get TLS working in GKE with a new Ingress service or updating an existing one.  
+1. You also have configured a [k8dev gcloud CLI profile](new-gcloud-profile.md).
+1. You are using the k8dev profile.
 
-## 1. Pre-Requisites
+    ```
+    gcloud config configurations activate k8dev
+    ```
 
-1. Have access to a GCP project.
-1. Created a GKE cluster in that project, [the quickstart](https://cloud.google.com/kubernetes-engine/docs/quickstart) gets you up in running in less than 5 minutes.
-1. Configured a [GKE shell](https://cloud.google.com/kubernetes-engine/docs/quickstart) for the project/cluster and are able to run `kubectl` commands.
-1. A [kubernetes deployment](https://cloud.google.com/kubernetes-engine/docs/how-to/stateless-apps) capabale of serving http traffic.
-1. Be the DNS admin of a [UW subdomain](https://itconnect.uw.edu/connect/uw-networks/network-addresses/requesting-a-new-subdomain/uw-subdomain/) `yourdomain.uw.edu`.  This readme uses that domain as an example to ultimately serve `app.yourdomain.uw.edu` with TLS.  This will also work for serve `yourdomain.uw.edu` as well with a matching `A` record.
+## Kubernetes Setup
+The main documention for this is not yet on GKE docs, but is on [GitHub](https://github.com/kubernetes/ingress-gce) and official [kubernetes.io](https://kubernetes.io/docs/concepts/services-networking/ingress/).  There are numerous ways of setting up ingress, the way it must be done for TLS in GCP is a k8 `service` of type `ingress`.
 
-## 2. DNS
-You can later create an `A` record whereever you currently manage your domain, or, use GCP Cloud DNS.  Using Cloud DNS can give you better GR as GCP's SLA is better than UW-IT.
+### 1. Create a new cert for TLS
+If you don't have the public and private key for `yourdomain.uw.edu` then you will need to create a new one. These steps follow the [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) documentation.
 
-### Do This Once Per Subdomain
-1. In your GCP project, navigate to Network Services - Cloud DNS
-1. Create a new zone for `yourdomain.uw.edu`
-1. Click on the list of your zones and select `yourdomain.uw.edu` once it's created
-1. Copy and paste the `NS` and `SOA` to an email to `help@uw.edu` and ask them to update your records for `yourdomain.uw.edu` to include this new `NS` and `SOA`.
+1. Create an InCommon CSR for `*.yourdomain.uw.edu` if you want to serve multiple applications in a cluster with the same certificate. Use the [documentation here](https://wiki.cac.washington.edu/display/infra/Obtain+a+Certificate+from+the+InCommon+CA). 
+   - For example, if you are serving `app1.yourdomain.uw.edu` then the Common Name (CN) in your CSR could be `*.yourdomain.uw.edu`
 
-Since we dont yet have an external IP for your TLS Ingress service (GKE/Google automaticly creates this for us) we can't yet create `A` records.  We will revisit this shortly including using an existing Ingress service.
-
-## 3. Create the TLS kubernetes Secret
-Kubernetes needs a way for the Ingress service to find and use a TLS cert.  The public and private key are stored as kubernetes secrets.  These steps follow the [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) documentation.
-
-### Create a new cert
-If you don't have the public and private key for `yourdomain.uw.edu` then you will need to create a new one.
-
-1. Create an InCommon CSR for `*.yourdomain.uw.edu` if you want to serve multiple applications in a cluster with the same certificate, otherwise, don't make your cert be wildcard. Use the [documentation here](https://wiki.cac.washington.edu/display/infra/Obtain+a+Certificate+from+the+InCommon+CA). 
-1. For example, if you are serving `app1.yourdomain.uw.edu` then the Common Name (CN) in your CSR could be `*.yourdomain.uw.edu`
-1. Once the CSR is approved, the rest of this readme will use `yourdomain.uw.edu.key` and `yourdomain.uw.edu.crt` for the key and public cert respectively.
-
-### Use an existing cert
-If you have the public and private key for `yourdomain.uw.edu` use the following steps to create a TLS kubernetes secret.  If you run into problems or need help with the encoding use the [secret documentation](https://kubernetes.io/docs/concepts/configuration/secret/).
+2. Save your certs to your filesystem as `yourdomain.uw.edu.crt` and your private key as `yourdomain.uw.edu.key`. This is only temporary and you can delete them when done with this guide.
+   
+### 2. Create a K8 TLS Secret
+If you run into problems or need help with the encoding use the [secret documentation](https://kubernetes.io/docs/concepts/configuration/secret/).
 
 
 1. We need to base64 encode your cert and key.  The following command works for Linux (you must remove the line breaks).  Make sure the text for your cert and key end up in a file called `yourdomain.uw.edu.secret.yml`
 
-        base64 -w 0 yourdomain.uw.edu.crt >> iamdev.s.uw.edu.secret.yml
-        base64 -w 0 yourdomain.uw.edu.key >> iamdev.s.uw.edu.secret.yml
+        base64 -w 0 yourdomain.uw.edu.crt >> encoded.crt
+        base64 -w 0 yourdomain.uw.edu.key >> encoded.key
 
-1. Edit the `yourdomain.uw.edu.secret.yml` file to be the following.  Make sure to set the value for `tls.crt` and `tls.key` correctly (single line, no line breaks)
+1. Create a `./yourdomain.uw.edu.secret.yml` file with the following.  Make sure to set the value for `tls.crt` and `tls.key` to the value in their respective files you created (single line, no line breaks).
 
     ```yml
     apiVersion: v1
     data:
-      tls.crt: base64 encoded cert
-      tls.key: base64 encoded key
+      tls.crt: [base64 encoded cert]
+      tls.key: [base64 encoded key]
     kind: Secret
     metadata:
       name: yourdomain-tls-secret
@@ -56,17 +54,64 @@ If you have the public and private key for `yourdomain.uw.edu` use the following
     type: Opaque
     ```
 1. Apply the secret `kubectl create -f ./yourdomain.uw.edu.secret.yml`
+1. You should now see your new secret `kubectl get secrets`
 
-## 4. Create the kubernetes Ingress Service
+### 4. Create the kubernetes Ingress Service
 You should now have the following before preceeding...
 
-- The ability to create/edit `A` records for `yourdomain.uw.edu`
-- A TLS cert and key as a kubernetes secret
+- A k8 secret that has a TLS cert and key.
 - A kubernetes deployment of some kind capable of serving http from a pod
 
-1. At this point you must follow the [kubernetes ingress documenation](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls).  It describes what the Ingress service should be like for a single backend http app that you already have running named `s1` (change that value to match your existing deployment).  The documentation also can be used to serve `app1.yourdomain.uw.edu` as well as `app2.yourdomain.uw.edu`.  Keep in mind that the secret we created is named `yourdomain-tls-secret` and that will need to be the value for `secretName` in your Ingress yml.
-1. With your Ingress service created, you now need to go to VPC Networks - External IP Addresses.
-1. Find the IP in the list that was created for you, switch it to `Static` if it isnt already.
-1. Using the same IP address, go to Cloud DNS (or whever you manage DNS) and create an `A` record pointing `yourdomain.uw.edu` to this new IP.
-1. Wait for the TTL and load https://yourdomain.uw.edu in a browser
+1. Follow the [kubernetes ingress documenation](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls).  It describes what the Ingress service should be like for a single backend http app that you already have running named `s1` (change that value to match your existing deployment).  
+1. The documentation also can be used to serve `app1.yourdomain.uw.edu` as well as `app2.yourdomain.uw.edu`.  
+1. Keep in mind that the secret we created is named `yourdomain-tls-secret` and that will need to be the value for `secretName` in your Ingress yml.
+
+#### Example
+1. Create a `./ingress.yml` file with the following...
+
+    ```YAML
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      name: iamdev-ingress
+    spec:
+      tls:
+      - secretName: iamdev-tls-secret
+      backend:
+        serviceName: demo
+        servicePort: 80
+    ```
+
+2. Apply the service, keep in mind GCP takes a good amount of time provisioning and configuring the load balancer when you run this.
+
+    ```
+    kubectl apply -f ./ingress.yml
+    ```
+
+3. After a good 5 minutes, make sure the backend does not say "UNHEALTHY".  This is most likely becuase the port on the container is not set correctly or it doesnt have a health check.
+
+    ```
+    kubectl describe ingress [ingress name] |grep backends
+    ```
+
+## DNS Setup
+We now want to create an `A` record and have it point to the IP of our ingress.
+
+1. Get the IP of the load balancer in use by your ingress.
+
+    ```
+    kubectl describe ingress [ingress name] |grep Address
+    ```
+
+2. Create an `A` record so networking can be routed to the ingress.  Unfortunately this is a multiline command.
+
+    ```
+    gcloud dns record-sets transaction start --zone [zonename]
+
+    gcloud dns record-sets transaction add --zone [zonename] --name [appname].iamdev.s.uw.edu. --ttl 300 --type A "[Load Balancer IP]"
+
+    gcloud dns record-sets transaction execute --zone [zonename]
+    ```
+
+1. Wait for the TTL and DNS to propagate, then load `https://[your new A record]` in a browser
 
