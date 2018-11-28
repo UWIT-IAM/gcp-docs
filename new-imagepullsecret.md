@@ -1,5 +1,5 @@
 # New Image Pull Secret for GKE to GCR
-By default, GKE has read permissions on the GCR storage bucket in the same GCP Project as the cluster.  That's not what we have.  We have our GCR in the `uwit-mci-iam` project and GKE is terraform created projects.
+By default, GKE has read permissions on the GCR storage bucket in the same GCP Project as the cluster.  That's not what we have.  We have our GCR in the `uwit-mci-iam` project and GKE is a terraform created projects.
 
 ## NOTE
 This entire process is done once per cluster
@@ -10,7 +10,7 @@ This entire process is done once per cluster
 
 ## Prerequisite
 1. You have configured the [iamshared gcloud CLI profile](projects-shared.md) and have access to that project.
-2. You have configured the [kbdev gcloud CLI profile] and can use it.
+2. You have configured the `[k8dev gcloud CLI profile]` and can use it.
 
     ```
     gcloud config configurations activate k8dev

@@ -1,13 +1,16 @@
 ## UWIT-IAM GCP Technical Documentation
 
 ### Web Applications
-- [How do I create a new application and have it pushed to GCR](new-application.md)
 - [How do I configure my gcloud CLI](new-gcloud-profile.md)
+- [How do I create a new application and have it pushed to GCR](new-application.md)
 - [How do I manually deploy my application to the dev cluster](new-deployment.md)
 - [How do I auto deploy my application to a cluster](new-cicd.md)
 - [How do I serve HTTP/HTTPS traffic to/from my application](edit-ingress.md)
 
-### Administration
+### Pod Administration
+- [How do I view logs/stdout](get-logs.md)
+
+### Cluster Administration
 - [How do I get DNS resolving to a GKE cluster](new-hostedzone.md)
 - [How do I enable TLS traffic into a GKE cluster](new-ingress.md)
 - [How do I add/update TLS secrets on an Ingress Service](edit-secrets-tls.md)
