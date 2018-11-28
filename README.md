@@ -9,8 +9,9 @@
 
 ### Administration
 - [How do I get DNS resolving to a GKE cluster](new-hostedzone.md)
-- [How do I add/update TLS secrets on an Ingress Service](edit-secrets-tls.md)
 - [How do I enable TLS traffic into a GKE cluster](new-ingress.md)
+- [How do I add/update TLS secrets on an Ingress Service](edit-secrets-tls.md)
+- [How do I enable a cluster to pull from GCR](new-imagepullsecret.md)
 - The naming conventions in use can be found by looking at the [examples](examples/)
 
 #### New Cluster Setup
@@ -20,3 +21,4 @@ Google Cloud Projects and GKE clusters are created by the UE team using Terrafor
 1. Get a simple basic [new application](new-application.md) running.
 1. Create a [hosted zone](new-hostedzone.md)
 1. Create a [TLS Ingress Service](new-ingress.md)
+1. Enable the default k8 service account to [pull from GCR](new-imagepullsecret.md)

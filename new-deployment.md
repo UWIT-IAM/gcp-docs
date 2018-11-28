@@ -39,6 +39,13 @@ spec:
         image: gcr.io/google_containers/echoserver:1.3
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "200m"
+          limits:
+            memory: "128Mi"
+            cpu: "300m"
 ```
 
 1. Create your deployment `kubectl apply -f ./deployment.yml`

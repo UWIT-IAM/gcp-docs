@@ -83,6 +83,7 @@ We still want seperate service accounts per app becuase one day google may/shoul
 1. Verify your build works, get help from the team if it doesnt, update these docs as needed.
 
 ## Next Steps
+1. Your docker container must serve a `200` by default on `/` as that is required for GKE Ingress health checks.  Otherwise, serve a `200` on another route and specify the readiness and health checks in the same way as the `identityuw` deployment.
 1. Everything must be working for your to proceed, manually deployment of apps in eval and prod is not permitted and is done via a CI to CD integration.  Please make sure the steps above all work.
 1. Your app is now ready for Continous Integration.  But, there is much to consider when architecting automation to be in sync or not with your Git branching model and release model.  Please [read this document](https://docs.google.com/document/d/1ecFyX3HcnE8BGoc8MOvTkXyUozt7ao-0R-T7-iF0v9I/edit) and discuss with a team member.
 2. Before attempting to get your app running a K8 cluster it's best to think and discuss it's architecture first.  Setting aside all the CI automation concerns in the step above, what "state" if any does your app have...a database, a cache, static files?  Remember that your container must be designed to be stateless (ideally, statefull things are possible).  Discuss with the team and come up with a plan.
