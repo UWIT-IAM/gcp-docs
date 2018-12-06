@@ -1,15 +1,19 @@
 # New Image Pull Secret for GKE to GCR
+
 By default, GKE has read permissions on the GCR storage bucket in the same GCP Project as the cluster.  That's not what we have.  We have our GCR in the `uwit-mci-iam` project and GKE is a terraform created projects.
 
 ## NOTE
-This entire process is done once per cluster
 
-- [x] Follow this readme for the `dev` cluster.
-- [ ] Follow this readme for the `eval` cluster.
-- [ ] Follow this readme for the `prod` cluster.
+This entire readme must be done once per cluster.
+
+- [x] `dev` cluster.
+- [x] `eval` cluster.
+- [x] `prod` cluster.
 
 ## Prerequisite
+
 1. You have configured the [iamshared gcloud CLI profile](projects-shared.md) and have access to that project.
+
 2. You have configured the `[k8dev gcloud CLI profile]` and can use it.
 
     ```
@@ -17,7 +21,8 @@ This entire process is done once per cluster
     ```
 
 ## Service Account Setup
-Do this once per project that is hosting a GCR.
+
+**This is already done for `uwit-mci-iam`.** Do this once per project that is hosting a GCR.
 
 The purpose of this account is limited to GCR read in GCP projects external from `uwit-mci-iam`.
 
@@ -47,8 +52,8 @@ The purpose of this account is limited to GCR read in GCP projects external from
     gcloud iam service-accounts keys create ./key.json --iam-account k8-gcr@uwit-mci-iam.iam.gserviceaccount.com
     ```
 
-
 ## Kubernets Setup
+
 Do this onece per kubernetes cluster that will pull from GCR.
 
 1. Create the k8 secret that all deployments will use and refrence in their `imagePullSecrets` yaml.  The only special value below is the `key.json` which should be the result from doing the steps above.

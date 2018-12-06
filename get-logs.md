@@ -1,7 +1,9 @@
 # Viewing Logs
+
 Logs are sent to Stackdriver, but, can be fetched at the command line using `kubectl`.
 
 ## Prerequisite
+
 1. You also have configured a [k8dev gcloud CLI profile](new-gcloud-profile.md).
 1. You are using the k8dev profile.
 
@@ -24,10 +26,10 @@ There are a [few more things](https://kubernetes.io/docs/reference/kubectl/cheat
     kubectl logs [podname] image
     ```
 
-1. ...or Stream the logs
+1. ...or stream the logs
 
     ```
     kubectl logs -f [podname]
     ```
 
-1. Remember, the logs you see are for the currently running deployment.  You will have to get the pods of a previous deployment 
+1. Remember, the logs you see are for the currently running deployment.  You will have to get the pods of a previous deployment to see those.
