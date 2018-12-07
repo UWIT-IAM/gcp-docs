@@ -68,9 +68,10 @@ If you run into problems or need help with the encoding use the [secret document
     metadata:
       name: yourdomain-tls-secret
       namespace: default
-    type: Opaque
+    type: kubernetes.io/tls
     ```
-1. Apply the secret `kubectl create -f ./yourdomain.uw.edu.secret.yml`
+1. Apply the secret `kubectl create -f ./yourdomain.uw.edu.secret.yml`. This can take 5-10 minutes to sync with the GCP Load Blancer as it will refresh what it has if this secret is in use by a K8 Ingress service.
+
 1. You should now see your new secret `kubectl get secrets`
 
 ### 2. Create the kubernetes Ingress Service
@@ -118,7 +119,7 @@ A single ingress service You should now have the following before preceeding...
     kubectl apply -f ./ingress.yml
     ```
 
-3. After a good 5 minutes, make sure the backend does not say "UNHEALTHY".  This is most likely becuase the port on the container is not set correctly or it doesnt have a health check.
+3. After a good 5-10 minutes, make sure the backend does not say "UNHEALTHY".  This is most likely becuase the port on the container is not set correctly or it doesnt have a health check.
 
     ```
     kubectl describe ingress [ingress name] |grep backends
