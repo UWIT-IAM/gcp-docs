@@ -11,6 +11,7 @@
 ## Pod Administration
 
 - [How do I view logs/stdout](get-logs.md)
+- [How do I monitor my applicatoin](monitoring.md)
 
 ## Cluster Administration
 
