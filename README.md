@@ -7,6 +7,7 @@
 - [How do I manually deploy my application to the dev cluster](new-deployment.md)
 - [How do I auto deploy my application to a cluster](https://github.com/UWIT-IAM/gcp-k8)
 - [How do I serve HTTP/HTTPS traffic to/from my application](edit-ingress.md)
+- [How do I serve static content js/css/html from a CDN](edit-cdn.md)
 
 ## Pod Administration
 
