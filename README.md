@@ -19,6 +19,7 @@
 - [How do I enable TLS traffic into a GKE cluster](new-ingress.md)
 - [How do I add/update TLS secrets on an Ingress Service](edit-secrets-tls.md)
 - [How do I enable a cluster to pull from GCR](new-imagepullsecret.md)
+- [How do I create a Load Balancer for CDN based buckets](new-cdn.md)
 - The naming conventions in use can be found by looking at the `/examples` dirctory.
 
 ### New Cluster Setup
