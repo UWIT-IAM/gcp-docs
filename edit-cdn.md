@@ -25,6 +25,12 @@ This bucket will be 100% public and multi-regional, do not try to shim in conten
     gsutil iam ch allUsers:objectViewer gs://uwit-iam-[APPNAME]-static
     ```
 
+1. Grant your CI Service Account access to upload to this bucket.  You created this account during the [new-application](new-application.md) process.
+
+    ```
+    gsutil iam ch serviceAccount:[APPNAME]-gcr-ci@uwit-mci-iam.iam.gserviceaccount.com:admin gs://uwit-iam-[APPNAME]-static
+    ```
+
 1. Add your new bucket as a [Backend to Cloud CDN](https://cloud.google.com/load-balancing/docs/backend-bucket)
 
     ```
