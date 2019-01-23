@@ -12,7 +12,7 @@ Logs are sent to Stackdriver, but, can be fetched at the command line using `kub
     gcloud config configurations activate k8dev
     ```
 
-## Stackdriver K8 Lable
+## Stackdriver K8 Label
 
 If you add labels to your deployment or service YML you can make querying for anything and everything that has that label and easy process.  By putting the following filter into Stackdriver you can query for the `identityuw` label.
 

@@ -86,3 +86,7 @@ The service (NodePort) will provide the networking from the load balancer to you
 1. Make sure it's running `kubectl get services [appname]`
 
 1. Now you need to [edit an ingress service](edit-ingress.md) so that traffic can find your pod.
+
+## Run Your Deployment On Our Clusters
+
+Put your `service.yml` and `deployment.yml` into the [gcp-k8](https://github.com/UWIT-IAM/gcp-k8) GH repo using the conventions of that repo.
