@@ -78,11 +78,11 @@ Fonts are generally loaded from CSS. This means that fonts are subject to CORS. 
     "method": ["GET"],
     "maxAgeSeconds": 3600
   }
-]```
+]
+```
 
 We run the following command: 
 
 ```bash
 gsutil cors set cors.json gs://$BUCKET_NAME
 ```
-
