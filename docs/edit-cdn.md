@@ -55,3 +55,34 @@ This bucket will be 100% public and multi-regional, do not try to shim in conten
 
     gcloud dns record-sets transaction execute --zone iamprod
     ```
+## Copying your statics to the CDN
+
+Ideally this is a step in your Continuous Integration. Identity.UW has the following steps after a succesful build:
+
+```bash
+echo $GCR_ADMIN_TOKEN | gcloud auth activate-service-account --key-file=-
+gsutil cp -z js,html,css -r dist "${CDN_BUCKET}/${IDUWVERSION}"  || travis_terminate 1
+```
+
+The first line authenticates to the google's CLI. The second one copies a newly-built directory of statics to a new directory in the CDN. **Important note** - add `-z js,html,css` to compress text-based files both on disk and over the network.
+
+## CORS
+
+Fonts are generally loaded from CSS. This means that fonts are subject to CORS. Google CDN's CORS settings are global, and you can consult their [paltry documentation of capabilities](https://cloud.google.com/storage/docs/configuring-cors). This leaves us with two options: 1) Compliling a list of known hosts and configuring the bucket to allow only them, or 2) using a wildcard `*`. Both have their drawbacks. The main concern with wildcarding is a security concern - we currently reason that the public nature of CDN statics makes it permissible, and for now we employ that option. To enable this you must perform the following one-off command. Given the file `cors.json`:
+
+```
+[
+  {
+    "origin": ["*"],
+    "responseHeader": ["Content-Type"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]```
+
+We run the following command: 
+
+```bash
+gsutil cors set cors.json gs://$BUCKET_NAME
+```
+
