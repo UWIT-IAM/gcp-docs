@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: [zonename]-ingress
+spec:
+  tls:
+  - secretName: [zonename]-tls-secret
+  backend:
+    serviceName: demo
+    servicePort: 80
+  rules:
+  - host: identity.iamdev.s.uw.edu
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: demo
+          servicePort: 80
+  - host: privategcr.iamdev.s.uw.edu
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: privategcr
+          servicePort: 80
+
