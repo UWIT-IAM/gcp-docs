@@ -6,7 +6,7 @@ Containerizing an app is half the battle.  Taking something from on prem to the 
 
 Please use this guide and expand to it as needed.
 
-### Mounting Data/Config
+### Where To Mount Data/Config
 
 Secrets, config values, variable data, static data...you now need to change how you source this data and inject it into your runtime for local development and a kubernetes runtime.
 
@@ -24,25 +24,27 @@ Secrets, config values, variable data, static data...you now need to change how 
 
    * Others - For static web files you should use a [CDN](new-cdn.md).  You can also use a cloud storage bucket that your app code can access via the `gcloud` or a language specific SDK.  Also managed databases, SQL and NonSQL can be used.
 
-3. Now with your data segmented and some storage options selected, you will need to make it so your app can injest the data.  As far as your app is concerned, all of these options result in either env vars or files accessable via the file system.
+### Mount Data/Config
 
-   1. Firstly, for local development, make your app load this data from env vars (non secret data).  This can be done on your local environment with dot files using something like [dotenv](https://github.com/theskumar/python-dotenv) for python for example.  The idea is, you will have code in your app that uses it's native way of accessing env vars.  When your container runs on Kubernetes, your pod will inject these vars for you when using a this ConfigMap or Env Vars storage option.
+Now with your data segmented and some storage options selected, you will need to make it so your app can injest the data.  As far as your app is concerned, all of these options result in either env vars or files accessable via the file system.
 
-   2. Second, get secrets from files.  When doing local development you can source `dummy-secret.pem` to your github repository for your app.  It will not have real values of course but your readme can instruct the developer how to set the necessary values.  During `docker build` locally you can copy these files in.  Your app code can then look for them.  For kubernetes, you mount secrets and persistant volumes so they appear in the same directories/files in the file system for your app.  There are assumptions made by kubernetes and defaults so please understand how these files are created and updated on a per storage option basis.
+1. For local development, make your app load this data from env vars (non secret data).  This can be done on your local environment with dot files using something like [dotenv](https://github.com/theskumar/python-dotenv) for python for example.  The idea is, you will have code in your app that uses it's native way of accessing env vars.  When your container runs on Kubernetes, your pod will inject these vars for you when using a this ConfigMap or Env Vars storage option.
 
-4. You should now be able to run your application in a container locally, and, ideally, with the right config stored in [gcp-k8](https://github.com/UWIT-IAM/gcp-k8) it can run in kubernetes.
+2. Get secrets from files.  When doing local development you can source `dummy-secret.pem` to your github repository for your app.  It will not have real values of course but your readme can instruct the developer how to set the necessary values.  During `docker build` locally you can copy these files in.  Your app code can then look for them.  For kubernetes, you mount secrets and persistant volumes so they appear in the same directories/files in the file system for your app.  There are assumptions made by kubernetes and defaults so please understand how these files are created and updated on a per storage option basis.
 
-5. Next steps...
+You should now be able to run your application in a container locally, and, ideally, with the right config stored in [gcp-k8](https://github.com/UWIT-IAM/gcp-k8) it can run in kubernetes.
 
-    1. Send all logs/data to stdout and stderr and then [use you logs](get-logs.md).
+### Next steps
 
-    1. Choose a git branching model that aligns with your [development and deployment patterns](https://docs.google.com/document/d/1ecFyX3HcnE8BGoc8MOvTkXyUozt7ao-0R-T7-iF0v9I/edit).  It does not have to be GitFlow, your master branch represents an artifact that was built in the past.  GitFlow is great for software libraries, but not so much for web applications.
+1. Send all logs/data to stdout and stderr and then [use you logs](get-logs.md).
 
-    1. Proceed to setting up continous integration so that something can build your container automaticly and push to GCR (below).
+1. Choose a git branching model that aligns with your [development and deployment patterns](https://docs.google.com/document/d/1ecFyX3HcnE8BGoc8MOvTkXyUozt7ao-0R-T7-iF0v9I/edit).  It does not have to be GitFlow, your master branch represents an artifact that was built in the past.  GitFlow is great for software libraries, but not so much for web applications.
 
-    1. Enable [ingress](new-ingress.md) from outside of the cluster to your app (if needed).
+1. Proceed to setting up continous integration so that something can build your container automaticly and push to GCR (below).
 
-    1. Now with your app running in a cluster, [instrument and monitor](https://docs.google.com/document/d/1LVZ6y0ErvEFooQFUtzycRvujTJj_dnDfZ8RnZrdTT6Q/edit) you application.
+1. Enable [ingress](new-ingress.md) from outside of the cluster to your app (if needed).
+
+1. Now with your app running in a cluster, [instrument and monitor](https://docs.google.com/document/d/1LVZ6y0ErvEFooQFUtzycRvujTJj_dnDfZ8RnZrdTT6Q/edit) you application.
 
 ## Enable GCR with a Service Account
 
