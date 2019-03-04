@@ -45,8 +45,7 @@ The steps below follow the [Ingress](https://kubernetes.io/docs/concepts/service
 
 If you don't have the public and private key for `yourdomain.uw.edu` then you will need to create a new one.
 
-1. Create an InCommon CSR for `*.yourdomain.uw.edu` if you want to serve multiple applications in a cluster with the same certificate. Use the [documentation here](https://wiki.cac.washington.edu/display/infra/Obtain+a+Certificate+from+the+InCommon+CA).
-   - For example, if you are serving `app1.yourdomain.uw.edu` then the Common Name (CN) in your CSR could be `*.yourdomain.uw.edu`
+1. Create an InCommon CSR for `*.yourdomain.uw.edu` if you want to serve multiple applications in a cluster with the same certificate. Use the [wildcard cert documentation](https://wiki.cac.washington.edu/display/infra/Wildcard+Certificate+Requests) or the [normal one](https://wiki.cac.washington.edu/display/infra/Obtain+a+Certificate+from+the+InCommon+CA) as needed.
 
 2. Save your certs to your filesystem as `yourdomain.uw.edu.crt` and your private key as `yourdomain.uw.edu.key`. This is only temporary and you can delete them when done with this guide.
 
@@ -58,25 +57,16 @@ The main documention for this [is here](https://cloud.google.com/kubernetes-engi
 
 If you run into problems or need help with the encoding use the [secret documentation](https://kubernetes.io/docs/concepts/configuration/secret/).
 
-1. We need to base64 encode your cert and key.  The following command works for Linux (you must remove the line breaks).  Make sure the text for your cert and key end up in a file called `yourdomain.uw.edu.secret.yml`
+1. Get the intermediate cert from https://wiki.cac.washington.edu/display/infra/InCommon+SSL+Intermediate+Certificates and save it as `intermediate.crt`
 
-        base64 -w 0 yourdomain.uw.edu.crt >> encoded.crt
-        base64 -w 0 yourdomain.uw.edu.key >> encoded.key
+2. Combine `intermediate.crt` with `yourdomain.uw.edu.crt`
 
-1. Create a `./yourdomain.uw.edu.secret.yml` file with the following.  Make sure to set the value for `tls.crt` and `tls.key` to the value in their respective files you created (single line, no line breaks).
+       cat yourdomain.uw.edu.crt intermediate.crt > yourdomain.uw.edu.combined
 
-    ```yml
-    apiVersion: v1
-    data:
-      tls.crt: [base64 encoded cert]
-      tls.key: [base64 encoded key]
-    kind: Secret
-    metadata:
-      name: yourdomain-tls-secret
-      namespace: default
-    type: kubernetes.io/tls
-    ```
-1. Apply the secret `kubectl create -f ./yourdomain.uw.edu.secret.yml`. This can take 5-10 minutes to sync with the GCP Load Blancer as it will refresh what it has if this secret is in use by a K8 Ingress service.
+3. Now create the kubernetes secret using the combined cert and your key.  This will create the correct yaml for use with the key and cert base64 encoded. This can take 5-10 minutes to sync with the GCP Load Blancer as it will refresh what it has if this secret is in use by a K8 Ingress service.  If you make mistakes, resolving those can take up to 1hr.
+
+       create secret tls yourdomain-tls --key yourdomain.uw.edu.key --cert yourdomain.uw.edu.combined
+
 
 1. You should now see your new secret `kubectl get secrets`
 
@@ -118,7 +108,7 @@ The documentation also can be used to serve `app1.yourdomain.uw.edu` as well as 
         kubernetes.io/ingress.global-static-ip-name: [named static ip]
     spec:
       tls:
-      - secretName: iamdev-tls-secret
+      - secretName: iamdev-tls
       backend:
         serviceName: demo
         servicePort: 80
@@ -127,21 +117,21 @@ The documentation also can be used to serve `app1.yourdomain.uw.edu` as well as 
 1. Replace `[named static ip]` with the reserved name/ip that Unix Engineering created for you.
 
     ##### Automated Deployment
-    
+
     1. Put this file in the respective environment folder at https://github.com/UWIT-IAM/gcp-k8
-    
+
     1. Follow the instructions at that repo for more details.
-    
+
     ##### Manual Deployment
-    
+
     1. Apply the service, keep in mind GCP takes a good amount of time provisioning and configuring the load balancer when you run this.
-    
+
         ```
         kubectl apply -f ./ingress.yml
         ```
-    
+
     2. After a good 5-10 minutes, make sure the backend does not say "UNHEALTHY".  This is most likely becuase the port on the container is not set correctly or it doesnt have a health check.
-    
+
         ```
         kubectl describe ingress [ingress name] |grep backends
         ```
