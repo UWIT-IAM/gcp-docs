@@ -7,7 +7,7 @@ This is a public repo, do not store service account names, project id's or other
 - [How do I configure my gcloud CLI](docs/new-gcloud-profile.md)
 - [How do I create a new application and have it pushed to GCR](docs/new-application.md)
 - [How do I manually deploy my application to the dev cluster](docs/new-deployment.md)
-- [How do I auto deploy my application to a cluster](docs/https://github.com/UWIT-IAM/gcp-k8)
+- [How do I auto deploy my application to a cluster](https://github.com/UWIT-IAM/gcp-k8)
 - [How do I serve HTTP/HTTPS traffic to/from my application](docs/edit-ingress.md)
 - [How do I serve static content js/css/html from a CDN](docs/edit-cdn.md)
 

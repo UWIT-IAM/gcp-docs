@@ -65,10 +65,9 @@ If you run into problems or need help with the encoding use the [secret document
 
 3. Now create the kubernetes secret using the combined cert and your key.  This will create the correct yaml for use with the key and cert base64 encoded. This can take 5-10 minutes to sync with the GCP Load Blancer as it will refresh what it has if this secret is in use by a K8 Ingress service.  If you make mistakes, resolving those can take up to 1hr.
 
-       create secret tls yourdomain-tls --key yourdomain.uw.edu.key --cert yourdomain.uw.edu.combined
+       kubectl create secret tls yourdomain-tls --key yourdomain.uw.edu.key --cert yourdomain.uw.edu.combined
 
-
-1. You should now see your new secret `kubectl get secrets`
+4. You should now see your new secret `kubectl get secrets`
 
 ### 2. Create the kubernetes Ingress Service
 
