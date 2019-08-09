@@ -22,6 +22,7 @@ This is a public repo, do not store service account names, project id's or other
 - [How do I enable TLS traffic into a GKE cluster](docs/new-ingress.md)
 - [How do I enable a cluster to pull from GCR](docs/new-imagepullsecret.md)
 - [How do I create a Load Balancer for CDN based buckets](docs/new-cdn.md)
+- [Create or edit secrets](docs/new-secrets.md)
 - The naming conventions in use can be found by looking at the `/examples` dirctory.
 
 ### New Cluster Setup
