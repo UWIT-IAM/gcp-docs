@@ -145,12 +145,12 @@ We now want to create an `A` record and have it point to the IP of our ingress.
     kubectl describe ingress [ingress name] |grep Address
     ```
 
-1. Create an `A` record so networking can be routed to the ingress.  Unfortunately this is a multiline command.
+1. Create an ~~`A`~~ `CNAME` record so networking can be routed to the ingress.  Unfortunately this is a multiline command. You can do an `A` record but this will mean having to edit multiple times were the load balancer ever to change.
 
     ```
     gcloud dns record-sets transaction start --zone [zonename]
 
-    gcloud dns record-sets transaction add --zone [zonename] --name [appname].iamdev.s.uw.edu. --ttl 300 --type A "[Load Balancer IP]"
+    gcloud dns record-sets transaction add --zone [zonename] --name [appname].iamdev.s.uw.edu. --ttl 300 --type CNAME "[dns for a service already with an A record]"
 
     gcloud dns record-sets transaction execute --zone [zonename]
     ```
