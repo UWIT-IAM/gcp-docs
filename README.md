@@ -8,7 +8,7 @@ This is a public repo, do not store service account names, project id's or other
 - [How do I create a new application and have it pushed to GCR](new-application.md)
 - [How do I manually deploy my application to the dev cluster](new-deployment.md)
 - [How do I auto deploy my application to a cluster](https://github.com/UWIT-IAM/gcp-k8)
-- [How do I serve HTTP/HTTPS traffic to/from my application](edit-ingress.md)
+- [How do I serve HTTP/HTTPS traffic to/from my application](ingress.md#editing-the-gcloud-tls-ingress-load-balancer)
 - [How do I serve static content js/css/html from a CDN](edit-cdn.md)
 
 ## Application Administration
@@ -32,7 +32,7 @@ Google Cloud Projects and GKE clusters are created by the UE team using Terrafor
 1. Get a cluster provisioned from UE and have cluster admin access.
 1. Get a simple basic [new application](new-application.md) running.
 1. Create a [hosted zone](new-hostedzone.md)
-1. Create a [TLS Ingress Service](new-ingress.md)
+1. Create a [TLS Ingress Service](ingress.md)
 1. Enable the default k8 service account to [pull from GCR](new-imagepullsecret.md)
 
 
