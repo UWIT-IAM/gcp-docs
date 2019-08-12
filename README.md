@@ -11,10 +11,10 @@ This is a public repo, do not store service account names, project id's or other
 - [How do I serve HTTP/HTTPS traffic to/from my application](docs/edit-ingress.md)
 - [How do I serve static content js/css/html from a CDN](docs/edit-cdn.md)
 
-## Pod Administration
+## Application Administration
 
 - [How do I view logs/stdout](docs/get-logs.md)
-- [How do I monitor my applicatoin](docs/monitoring.md)
+- [Application Monitoring with Prometheus/Grafana/Alerts](docs/monitoring.md)
 
 ## Cluster Administration
 
