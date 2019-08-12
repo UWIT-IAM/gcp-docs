@@ -8,7 +8,9 @@ This guide focuses on `host` based routing.  You can also do `name` based routin
 
 ## NOTE
 
-At a minimum, this entire readme must be done once per cluster. It can be done as needed for load balancer redundancy or performance reasons (a single load balancer can serve multiple wildcard TLS certs/traffic)
+At a minimum, this entire readme must be done once per cluster. It can be done as needed for load balancer redundancy
+or performance reasons. A single load balancer can serve multiple wildcard TLS certs/traffic. See
+[Using multiple SSL certificates in HTTP(s) load balancing with Ingress](https://cloud.google.com/kubernetes-engine/docs/how-to/ingress-multi-ssl) for further information.
 
 - [x] `dev` cluster.
 - [x] `eval` cluster.
@@ -156,3 +158,13 @@ We now want to create an `A` record and have it point to the IP of our ingress.
     ```
 
 1. Wait for the TTL and DNS to propagate, then load `https://[your new A record]` in a browser
+
+## Editing the GCloud TLS Ingress Load Balancer
+
+The Ingress Kubernetes objects are managed by Flux for each of our clusters.
+Adding a new endpoint always entails the same two-step process:
+
+1. Do the DNS Setup outlined above
+1. Add an entry in your project's [ingress.yml](https://github.com/UWIT-IAM/gcp-k8/blob/master/prod/ingress.yml).
+
+If your endpoint is covered by the same cluster-wide wild-card cert used by the other endpoints, then your work is done.
