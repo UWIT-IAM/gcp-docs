@@ -4,7 +4,7 @@ Ideally you are automating all the things and are fortunate enough to not need t
 
 ## Prerequisite
 
-1. You understand how access is granted to GCP via UW Groups membership within the [u_mciman_tenants_iam_condevs](https://groups.uw.edu/search/?name=u_mciman_tenants_iam&stem=&member=&owner=&type=effective&scope=one) group.
+1. You understand how access is granted to GCP via UW Groups membership within the [u_mciman_tenants_iam_operators](https://groups.uw.edu/search/?name=u_mciman_tenants_iam&stem=&member=&owner=&type=effective&scope=one) group.
 
 1. You have a [local shell setup](https://cloud.google.com/sdk/docs/quickstarts) for `gcloud` and **authenticated it with your netid**.
 
