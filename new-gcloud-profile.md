@@ -5,18 +5,11 @@ Ideally you are automating all the things and are fortunate enough to not need t
 ## Prerequisite
 
 1. You understand how access is granted to GCP via UW Groups membership within the [u_mciman_tenants_iam_operators](https://groups.uw.edu/search/?name=u_mciman_tenants_iam&stem=&member=&owner=&type=effective&scope=one) group.
+1. You need `kubectl` from something that can access our clusters. The recommended way is via 
+   [Google Cloud Shell](https://cloud.google.com/shell/), an in-browser shell with a lot of the utilities installed
+   and configured. Simply go to [the console](https://console.cloud.google.com/home/dashboard) and click
+   `Activate Cloud Shell`. See https://wiki.cac.washington.edu/display/MCI/Google+Cloud+Shell+Starter+Tips for more details.
 
-1. You have a [local shell setup](https://cloud.google.com/sdk/docs/quickstarts) for `gcloud` and **authenticated it with your netid**.
-
-1. You have ran `gcloud components install kubectl`.
-
-1. You can run the following command, which tells us you have permissions to the right project with the dev k8 cluster.
-
-    ```BASH
-    gcloud projects list --filter="labels.environment:dev"
-    ```
-
-1. You are on a UW Network, all kubernetes API interactions will require this.  Use Husky OnNet if needed.
 
 ## Create a gcloud Profile
 
