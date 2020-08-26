@@ -1,6 +1,6 @@
 # UWIT-IAM GCP Technical Documentation
 
-This is a public repo, do not store service account names, project id's or other sensitive configuration details.
+This is a public repo, do not store service account names, project id's or other sensitive configuration details. For connection access and other sensitive topics, please see the IAM team wiki > IAM Software Components > gcp-k8, which has links to other resources.
 
 ## Web Applications
 
