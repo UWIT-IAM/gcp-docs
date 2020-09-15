@@ -1,63 +1,156 @@
-# Creating and editing secrets
+**Note: This information is visible to the public. 
+Do not include sensitive information about secrets management here.**
 
-## Loading initial secrets
+# Secrets Overview
 
-There are two main ways to consume secrets - as files mounted to your pod or as environment variables.
-You can mount multiple secrets to a pod, and you may mix methods. In either case, the secrets are stored
-via key-value pairs under a secret name.
+A _secret_ is anything required at runtime that we don't want to commit into a code repository. Typical
+use cases for secrets include:
 
-Consult https://kubernetes.io/docs/concepts/configuration/secret/ for secret-loading. In general, environment
-variables are easier to work with. In the case of identity.uw, our main secrets are mounted as files.
+* Credentials and tokens for API dependencies
+* Certificates
+* Encryption Keys
 
-## Editing existing secrets
+At deploy time, our Kubernetes cluster "deploys" secrets in various ways so that they can be accessed by our 
+applications. 
 
-Editing items in a file is a little involved.
+The secrets' _data_ are stored in an internal instance of the Hashicorp Vault, managed by UW-IT Unix Engineering.
 
-```bash
-$ kubectl get secrets
-NAME                           TYPE                                  DATA   AGE
-demo-secret                    Opaque                                1      7s
-$ kubectl get secret demo-secret -o yaml
-apiVersion: v1
-data:
-  secret.py: IiIiVGhpcyBpcyB0aGUgc2VjcmV0IGZpbGUhIiIiClBBU1NXT1JEID0gJ2h1bnRlcjInCg==
-kind: Secret
-...
+All Kubernetes cluster configuration is stored in the access-controlled gcp-k8 repository.
+
+## Terminology
+
+**Kubernetes Secret** is a Kubernetes resource of type "Secret." The resource itself contains metadata about the secret,
+and its base64-encoded content.
+
+**External Secret** is a Kubernetes resource of type "ExternalSecret." External secrets are the interface
+between Kubernetes and the Hashicorp Vault. 
+
+The **Vault** is the secret data and version management service vended by Hashicorp.
+
+
+# Secret Naming
+
+We have a naming scheme for secrets that allows for deterministic names _and_ Vault paths.
+
+The format of the naming scheme looks like this:
+
+`{product}-[{short-qualifier}-]{functional-description}`
+
+Within the vault, the above scheme translates to the path:
+
+`{stage}/{product}/[{qualifier}/]{functional-description}`
+
+where:
+
+**Stage** refers to whether the secret is targeting the `dev`, `eval`, or `prod` stage of the application.
+
+**Product** refers either to the product consuming the secret, or the product that the secret grants access to.
+
+**Qualifier** is an optional and typically discouraged layer that can be used to group several related
+secrets together. It is discouraged to avoid unnecessary nested. Currently we only a qualifier for certificates,
+as we often have more than one certificate-adjacent secret.
+
+**Short Qualifier** is a truncated or otherwise shortened version of the above qualifier. ("certificate" becomes "cert"),
+and is used for quality of life when interacting with `kubectl`, to avoid overlong names in terminal tables.
+
+**Functional Description** is a short (1–3 word) description of what the secret does or how it behaves. 
+
+So, a secret named `identity-uw-cert-identity.uw.edu` would describe a certificate, used by the `identity-uw` workload,
+for its `identity.uw.edu` endpoint. 
+
+Within Vault, the path for the actual secret data would translate to: `{stage}/identity-uw/certificates/identity.uw.edu`.
+
+
+# Secrets Operations
+
+
+## Rotating Secrets
+
+If you need to rotate the values of your secrets, you can do that completely within the Hashicorp Vault UI. To do so,
+you must belong to the correct permissions group managed by the UW-IT UE team. 
+
+For more information, please refer to the UW-IT UE documents on the [Vault](https://wiki.cac.washington.edu/display/MCI/Mosler+Secrets+Vault). 
+This documentation is not publicly accessible.
+
+Changing the value of a secret in Vault is done by creating a new _version_ of the secret. The mere act of 
+creating this new version will make use of the Kubernetes External Secrets configuration to ensure the new values
+are deployed in near real-time. However, depending on how and when your application is accessing those secrets,
+your application may not start using the new version until is is restarted. 
+
+## Creating Secrets
+
+Creating a new secret involves the following steps:
+
+1. Creating the actual secret in the Vault
+1. Creating the ExternalConfiguration item for the Kubernetes cluster.
+1. Applying the ExternalConfiguration item to the Kubernetes cluster.
+
+The UW-IT IAM gcp-k8 package contains a utility to do this for you, with additional checks and helpful links to 
+streamline the process. The utility automatically generates the fully qualified name and Vault path for you and is 
+run like so:
+
+```
+python util/secret_manager.py \
+    create-external-secret \
+    --cluster foo-bar-0001-cluster \
+    --stage dev \
+    --workload my-site \
+    --qualifier certificate \
+    --secret-name www.mysite.com \
+
+# This would ultimately create a secret called `my-site-cert-www.mysite.com` 
+# with the Vault path `dev/my-site/certificate/www.mysite.com`.
 ```
 
-Observe that there is a file named `secret.py`, the value here is a base64-encoded version of the file. Now say you want
-to edit the contents of that file. There is a variable `PASSWORD` that needs a new value.
+The above command will:
+
+- Prompt you to create the secret value in the Vault, and tell you what to paste into the Vault form.
+- Create the ExternalSecret entry in `gcp-k8/dev/my-site/secrets.yml`
+- Apply the configuration to your cluster
+- Verify that the secret was synced from Vault
+
+You can also provide a `--dry-run` flag to roll back all changes at the end of the operation, and a `--no-apply` flag
+to create the entry only, but not apply it to your cluster.
+
+## Viewing Secrets
+
+There are several ways to view secrets. The easiest is by using the Vault UI.
+
+You can also use `kubectl` to view secrets: `kubectl get secret my-site-cert-www.mysite.com -o json` will show you the 
+metadata and base64-encrypted data of the secret created in the above example.
+
+You can use `kubectl` to view `ExternalSecrets` also: `kubectl get externalsecret my-site-cert-www.mysite.com -o json`,
+for example. This is useful if you suspect a syncing problem between Vault and Kubernetes; the external secret will 
+let you know if there is an error.
+
+To view the secret values that aare stored in the kubernetes secret, you can use a piped command like:
+
+`kubectl get secret my-site-cert-www.mysite.com -o json | jq -r '.data["tls.key"]' | base64 -d`, which would extract the
+cert key from your certificate json data, then base64 decode it for you.
+
+Lastly, you can simply use use the secret manager utility:
 
 ```
-$ kubectl get secret demo-secret -o json | jq -r '.data["secret.py"]' | base64 -d
-"""This is the secret file!"""
-PASSWORD = 'hunter2'
-$ kubectl get secret demo-secret -o json | jq -r '.data["secret.py"]' | base64 -d > secret.py.old
-$ sed 's/hunter2/hunter3/' < secret.py.old > secret.py
-$ base64 -w0 secret.py
-IiIiVGhpcyBpcyB0aGUgc2VjcmV0IGZpbGUhIiIiClBBU1NXT1JEID0gJ2h1bnRlcjMnCg==
+python util/secret_manager.py  dump-secret --secret name my-site-cert-www.mysite.com --data-only
 ```
 
-We've changed the password value local to our file. What you want to do now is drop in this new base64 in place of the old one.
-You can use `kubectl edit secret demo-secret` with your $EDITOR of choice. Or you can pull down the secret, edit it,
-and push it again...
+This would spit out the full value of the secret, which should exactly match what is stored in Vault.
 
-```bash
-$ kubectl get secret demo-secret -o yaml > secret.yaml
-$ emacs secret.yaml
-$ kubectl apply -f - < secret.yaml
-secret/demo-secret configured
-```
 
-You could even get crafty and do it all from a bash command...
+## Deleting Secrets
 
-```bash
-$ kubectl get secret demo-secret -o json | \
-  jq --arg newsecret $(base64 -w0 secret.py) '.data["secret.py"]=$newsecret' | \
-  kubectl apply -f -
-secret/demo-secret configured
-```
+1. Delete the `ExternalSecret` configuration item from the Kubernetes config
+1. Delete the `ExternalSecret` metadata from the Kubernetes cluster
+1. Delete the secret in Vault.
 
-As you can see, there are many different ways to shoot yourself in the foot! Pick the one that suits you best.
-This is an area that seems ripe for improvement. Possibly on the horizon is the use of Hashicorp Vault. I also
-wouldn't be surprised to see a way to edit these values from the GCP console. Time will tell!
+
+Step 1 involves literally just deleting the blob in the relevant `secrets.yml` file within the gcp-k8 package. This has 
+to be done first, or else Flux will just re-populate everything else from this configuration.
+
+For step 2, you can use `kubectl`: `kubectl delete externalsecret my-site-cert-www.mysite.com`. Note that we're deleting
+the _external_ secret here; if you just delete the `secret`, Flux will re-create it from the `ExternalSecret` configuration.
+
+Last, and only once you've validated that your application can still run without this secret, you can delete the data
+itself from Vault using the UI.
+
+There is currently no scripted way to perform this operation.
