@@ -1,5 +1,7 @@
 # Application Monitoring with Prometheus/Grafana/Alerts
 
+Required Reading: [MCI Documentation on Prometheus/Grafana/Alerts](https://wiki.cac.washington.edu/display/MCI/Monitoring+and+Alerting#MonitoringandAlerting-LocalConventionsforAlertsinMCI)
+
 In identityuw metrics are exposed via the `/metrics` endpoint, which prometheus
 scrapes. With that in place, you can view metrics results from grafana or
 prometheus itself. Using the prometheus console is good for constructing your
