@@ -8,7 +8,7 @@ This is a public repo, do not store service account names, project id's or other
 - [How do I create a new application and have it pushed to GCR](new-application.md)
 - [How do I manually deploy my application to the dev cluster](new-deployment.md)
 - [How do I auto deploy my application to a cluster](https://github.com/UWIT-IAM/gcp-k8)
-- [How do I serve HTTP/HTTPS traffic to/from my application](ingress.md#editing-the-gcloud-tls-ingress-load-balancer)
+- [How do I serve HTTP/HTTPS traffic to/from my application](ingress.md)
 - [How do I serve static content js/css/html from a CDN](edit-cdn.md)
 
 ## Application Administration
@@ -19,7 +19,7 @@ This is a public repo, do not store service account names, project id's or other
 ## Cluster Administration
 
 - [How do I get DNS resolving to a GKE cluster](new-hostedzone.md)
-- [How do I enable TLS traffic into a GKE cluster](new-ingress.md)
+- [How do I enable TLS traffic into a GKE cluster](ingress.md)
 - [How do I enable a cluster to pull from GCR](new-imagepullsecret.md)
 - [How do I create a Load Balancer for CDN based buckets](new-cdn.md)
 - [Create or edit secrets](secrets.md)

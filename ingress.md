@@ -43,99 +43,59 @@ or performance reasons. A single load balancer can serve multiple wildcard TLS c
 
 The steps below follow the [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls) documentation.
 
-## TLS Certificate Setup
-
-If you don't have the public and private key for `yourdomain.uw.edu` then you will need to create a new one.
-
-1. Create an InCommon CSR for `*.yourdomain.uw.edu` if you want to serve multiple applications in a cluster with the same certificate. Use the [wildcard cert documentation](https://wiki.cac.washington.edu/display/infra/Wildcard+Certificate+Requests) or the [normal one](https://wiki.cac.washington.edu/display/infra/Obtain+a+Certificate+from+the+InCommon+CA) as needed.
-
-2. Save your certs to your filesystem as `yourdomain.uw.edu.crt` and your private key as `yourdomain.uw.edu.key`. This is only temporary and you can delete them when done with this guide.
 
 ## Kubernetes Setup
 
-The main documention for this [is here](https://cloud.google.com/kubernetes-engine/docs/how-to/load-balance-ingress) and [advanced features here](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress).
-
-### 1. Create a K8 TLS Secret
-
-If you run into problems or need help with the encoding use the [secret documentation](https://kubernetes.io/docs/concepts/configuration/secret/).
-
-1. Get the intermediate cert from https://wiki.cac.washington.edu/display/infra/InCommon+SSL+Intermediate+Certificates and save it as `intermediate.crt`
-
-2. Combine `intermediate.crt` with `yourdomain.uw.edu.crt`
-
-       cat yourdomain.uw.edu.crt intermediate.crt > yourdomain.uw.edu.combined
-
-3. Now create the kubernetes secret using the combined cert and your key.  This will create the correct yaml for use with the key and cert base64 encoded. This can take 5-10 minutes to sync with the GCP Load Blancer as it will refresh what it has if this secret is in use by a K8 Ingress service.  If you make mistakes, resolving those can take up to 1hr.
-
-       kubectl create secret tls yourdomain-tls --key yourdomain.uw.edu.key --cert yourdomain.uw.edu.combined
-
-4. You should now see your new secret `kubectl get secrets`
-
-### 2. Create the kubernetes Ingress Service
-
-For every ingress service there is a GCP Load Balancer automatically created for you at $20/month.  Each of these load balancers can serve multiple FQDN's each having their own TLS secret and routing.
-
-A single ingress service You should now have the following before preceeding...
-
-- A k8 secret that has a TLS cert and key.
-- A kubernetes deployment of some kind capable of serving http from a pod.
-- A static IP reserved ahead of time that your Ingress will use.
-
-1. Determine if you need to create  a new ingress, or, [edit an existing one](edit-ingress.md).
-
-    ```
-    kubectl get ingress
-    kubectl describe ingress [name]
-    ```
-
-1. Keep in mind that the secret we created is named `yourdomain-tls-secret` and that will need to be the value for `secretName` in your Ingress yml.
-
-You can refer to the [kubernetes ingress documenation](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls).  It describes what the Ingress service should be like for a single backend http app that you already have running named `s1` (change that value to match your existing deployment).
-
-The documentation also can be used to serve `app1.yourdomain.uw.edu` as well as `app2.yourdomain.uw.edu`.
+The main documention for this [is here](https://wiki.cac.washington.edu/display/MCI/Kubernetes+Ingress). We use the nginx ingress solution provided by UW-IT UE. This solution also manages our TLS certificates using [LetsEncrypt](https://letsencrypt.org/), which simplifies our operations.
 
 
-#### Example
+### Example
 
-1. Create a `./ingress.yml` file with the following.  This assumes that their is a service `demo` already running in the cluster that has something behind it capable of serving traffic.
+1. Create a `./ingress.yml` file with the following.  This assumes that there is a service `demo` already running in the 
+cluster that has something behind it capable of serving traffic. 
 
-    ```YAML
-    apiVersion: extensions/v1beta1
-    kind: Ingress
-    metadata:
-      name: iamdev-ingress
-      annotations:
-        networking.gke.io/suppress-firewall-xpn-error: "true"
-        kubernetes.io/ingress.global-static-ip-name: [named static ip]
-    spec:
-      tls:
-      - secretName: iamdev-tls
-      backend:
-        serviceName: demo
-        servicePort: 80
-    ```
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: demo
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt  # This certificate will be created and managed by kubernetes
+spec:
+  tls:
+  # For each TLS certificate, you need one entry like this one.  
+    - hosts:
+        - demo.iamdev.s.uw.edu  # You can list multiple hostnames per TLS certificate if you choose to
+      secretName: demo-cert-demo.iamdev.s.uw.edu  # This secret will be created and managed by kubernetes, see secrets.yml for more info.
 
-1. Replace `[named static ip]` with the reserved name/ip that Unix Engineering created for you.
+  rules:
+    - host: demo.iamdev.s.uw.edu
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: demo
+              servicePort: 80
+```
 
-    ##### Automated Deployment
+#### Automated Deployment
 
-    1. Put this file in the respective environment folder at https://github.com/UWIT-IAM/gcp-k8
+1. Put this file in the respective environment folder at https://github.com/UWIT-IAM/gcp-k8
+1. Follow the instructions at that repo for more details.
 
-    1. Follow the instructions at that repo for more details.
+#### Manual Deployment
 
-    ##### Manual Deployment
+**Note:** Manual deployments are not recommended, because they will quickly be overwritten by Flux-Weave, which will 
+detect that the deployed configuration is different from that stored in the git repository, and re-apply what is
+committed.
 
-    1. Apply the service, keep in mind GCP takes a good amount of time provisioning and configuring the load balancer when you run this.
+```
+kubectl apply -f ./ingress.yml
+```
 
-        ```
-        kubectl apply -f ./ingress.yml
-        ```
+Changes should take place almost immediately.
 
-    2. After a good 5-10 minutes, make sure the backend does not say "UNHEALTHY".  This is most likely becuase the port on the container is not set correctly or it doesnt have a health check.
-
-        ```
-        kubectl describe ingress [ingress name] |grep backends
-        ```
 
 ## DNS Setup
 
@@ -147,7 +107,7 @@ We now want to create an `A` record and have it point to the IP of our ingress.
     kubectl describe ingress [ingress name] |grep Address
     ```
 
-1. Create an ~~`A`~~ `CNAME` record so networking can be routed to the ingress.  Unfortunately this is a multiline command. You can do an `A` record but this will mean having to edit multiple times were the load balancer ever to change.
+1. Create a `CNAME` record so networking can be routed to the ingress.
 
     ```
     gcloud dns record-sets transaction start --zone [zonename]
@@ -159,12 +119,3 @@ We now want to create an `A` record and have it point to the IP of our ingress.
 
 1. Wait for the TTL and DNS to propagate, then load `https://[your new A record]` in a browser
 
-## Editing the GCloud TLS Ingress Load Balancer
-
-The Ingress Kubernetes objects are managed by Flux for each of our clusters.
-Adding a new endpoint always entails the same two-step process:
-
-1. Do the DNS Setup outlined above
-1. Add an entry in your project's [ingress.yml](https://github.com/UWIT-IAM/gcp-k8/blob/master/prod/ingress.yml).
-
-If your endpoint is covered by the same cluster-wide wild-card cert used by the other endpoints, then your work is done.

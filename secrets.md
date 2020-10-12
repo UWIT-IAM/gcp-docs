@@ -1,5 +1,6 @@
 **Note: This information is visible to the public. 
-Do not include sensitive information about secrets management here.**
+Do not include sensitive information about secrets management here. Instead, put that on our 
+[internal wiki](https://wiki.cac.washington.edu/pages/viewpage.action?pageId=125261222)**.
 
 # Secrets Overview
 
@@ -26,7 +27,6 @@ and its base64-encoded content.
 between Kubernetes and the Hashicorp Vault. 
 
 The **Vault** is the secret data and version management service vended by Hashicorp.
-
 
 # Secret Naming
 
@@ -62,6 +62,8 @@ Within Vault, the path for the actual secret data would translate to: `{stage}/i
 
 
 # Secrets Operations
+
+Make sure you follow the [prerequisite connectivity steps](gcloud-kubectl-cli.md).
 
 
 ## Rotating Secrets
