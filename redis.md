@@ -24,7 +24,7 @@ Otherwise, contact @tomthorogood, who will be happy to assist you.
 
 ## Authorization
 
-Your service user will have access to all commands except [dangerous commands]. Do 
+Your service user will have access to all commands except dangerous commands. To 
 find out which commands are dangerous, run you can use `ACL CAT` (or [see the 
 documentation](https://redis.io/commands/acl-cat)).
 Additionally, your user will be scoped to keys prefixed with your username (i.e., 
@@ -46,6 +46,22 @@ env:
       secretKeyRef:
         name: redis-auth
         key: my-service-name
+```
+
+Similarly, connection information can be loaded via the `redis-connection` secret:
+
+```yaml
+env:
+  - name: REDIS_HOST
+    valueFrom:
+      secretKeyRef:
+        name: redis-connection
+        key: REDIS_HOST
+  - name: REDIS_PORT
+    valueFrom:
+      secretKeyRef:
+        name: redis-connection
+        key: REDIS_PORT
 ```
 
 [internal details]: https://github.com/uwit-iam/gcp-k8/tree/master/docs/redis.md
