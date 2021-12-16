@@ -63,6 +63,8 @@ We want to serve all static content from `*.cdn.iamprod.s.uw.edu`.  With this ki
 
 9. Click "Create"
 
+10. While the certificate service processes your request, hop onto Huskey OnNet and head to https://mosler.s.uw.edu. Upload the certificate key, csr, and (if applicable) the challenge password into the secret at `iam/kv/team-shared/certificate-keys/*.cdn.iamprod.s.uw.edu`, in case it's needed.
+
 
 ### Create the Load Balancer (do once)
 
