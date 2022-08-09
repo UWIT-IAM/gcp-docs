@@ -12,7 +12,7 @@ documentation to make sure you are defining something that meets your needs.
 You can find more information also in the [helm chart README] regarding how to 
 update the helm chart.
 
-[default values]: https://github.com/uw-iti-app-platform/helm-charts/tree/main/basic-web-service/Values.yaml
+[default values]: https://github.com/uw-iti-app-platform/helm-charts/tree/main/basic-web-service/values.yaml
 [helm chart README]: :https://github.com/uw-iti-app-platform/helm-charts/tree/main/basic-web-service/README.md
 
 If you want to update an application to use a newer chart version, 
