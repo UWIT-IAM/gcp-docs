@@ -24,7 +24,7 @@ We want to serve all static content from `*.cdn.iamprod.s.uw.edu`.  With this ki
 
 > Locality: Seattle
 
-> Organization: University of Wahington
+> Organization: University of Washington
 
 > Organizational Unit: UW-IT IAM
 
@@ -49,7 +49,7 @@ We want to serve all static content from `*.cdn.iamprod.s.uw.edu`.  With this ki
 3. Wait for an email telling you that your certificate has been issued (or refresh the [Certificate Service] page until your new cert shows as "issued")
 4. In a text editor, paste the PEM from the certificate (find this by going to your new certificate in the [Certificate Service] and then clicking on "Get PEM")
 5. Paste the PEM into your text editor
-6. Then, copy the contents of the "InCommon intermediate certificates for sha-2 certificates signed after October 5, 2014." and paste that into the text editor _after_ what you've already pasted. 
+6. Then, copy the contents of the "InCommon intermediate certificates for sha-2 certificates signed after October 5, 2024." and paste that into the text editor _after_ what you've already pasted. 
 7. Open the [Google Load Balancers Certificate Management] page (make sure you are in the uwit-mci-iam project!) -- If that link doesn't work, click on the button that says "Go to the certificates page" [here](https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs) -- There is no other way to get there through the UI.
 8. Click on "Create SSL certificate"
 
